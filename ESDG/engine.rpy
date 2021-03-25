@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-init offset = 997
 init python:
 
 
@@ -13,7 +12,7 @@ init python:
         """Специальный класс для хранения переменных, что бы было меньше путаницы."""
 
         SPRITES_DISTANCE_XSIZES = {"close": 1125, "normal": 900, "far": 630}
-        POSITIONS = {"fleft": fleft, "left": left, "cleft": cleft, "center": center, "cright": cright, "right": right, "fright": fright}
+        POSITIONS = {}#{"fleft": fleft, "left": left, "cleft": cleft, "center": center, "cright": cright, "right": right, "fright": fright}
 
         TRANSLATE_INTO_RUSSIAN = {
             "cs": "Виола",
@@ -36,7 +35,7 @@ init python:
             "library": "Библиотека",
             "clubs": "Клубы",
             "intro": "Интро",
-            "semen": "Комната Семёнв",
+            "semen": "Комната Семёна",
             "catacombs": "Катакомбы",
             "dining": "Столовая",
             "playground": "Спортплощадка",
@@ -99,6 +98,8 @@ init python:
             self.elements_background = "images/gui/gallery/not_opened_idle.png"
             self.elements_background_2 = None
             self.collections = {}
+
+            self.POSITIONS = {"fleft": fleft, "left": left, "cleft": cleft, "center": center, "cright": cright, "right": right, "fright": fright}
 
             self.settings_state = False
             self.gallery_state = False
@@ -686,9 +687,65 @@ init python:
 
                 name = file.split("/")[-1][:-4]
 
-                cgs[name.split("_", 1)[1]] = (name.split("_", 1)[0], file)
 
-        return cgs
+                #cgs[name.split("_", 1)[1]] = (name.split("_", 1)[0], file)
+
+                info = []#name
+
+
+                file_tags = name.split("_")
+
+
+                itime = file_tags[0]
+
+                rname = name.replace(itime+"_","")
+
+                info += [rname, itime]
+
+                tag = itime+"_"+file_tags[1]
+
+                if tag in ["d3_dv", "d3_un", "d3_sl", "d4_us", "d5_un", "d5_us", "d5_dv", "d6_dv", "d6_sl", "d6_un", "d7_un"]:
+                    tag += "_"+file_tags[2]
+
+                elif tag == "day4_us":
+                    tag = "d4_us_morning"
+                elif tag == "epilogue_mi":
+                    if file_tags[2] in ["1", "9"]:
+                        tag = "epilogue_mi_romantic"
+                    else:
+                        tag = "epilogue_mi_horror"
+                elif tag == "d3_us":
+                    if file_tags[2] == "library" and file_tags[3] in ["3", "4"]:
+                        tag = "d4_us_morning"
+                    else:
+                        tag += "_"+file_tags[1]
+                elif tag == "d6_us":
+                    if file_tags[2] == "night":
+                        tag = "d4_us_morning"
+                elif tag in ["d7_dv", "d6_uv"]:
+                    if len(file_tags) > 2:
+                        tag += "_2"
+
+
+                if not tag in cgs:
+                    cgs[tag] = []
+
+                cgs[tag].append(name)
+
+
+
+
+                #print(str(info))
+
+        #return cgs
+
+        print(len(cgs))
+
+        for tag in cgs:
+            print(tag+":")
+            for i in cgs[tag]:
+                print("    "+i)
+            print()
 
     def esdg_get_bg(): # Hope it'll work...
 
@@ -933,3 +990,103 @@ init python:
             True,
                 im.Scale(im.Blur("images/bg/ext_beach_day.jpg", 2.5), 320, 180)
         )
+
+
+
+label es_dev_gallery: # индекс
+
+    # show image Text("{size=70}RedHead Team представляет{/size}", slow_cps = 25) at truecenter
+
+    scene bg black
+
+    show image Text(">>", size=190, color="#FC9") as code_mikan:
+        xpos .14
+        yalign .5
+    show image Text("1.21.3.24", size=10) as mode_version:
+        xalign 1.0
+        yalign 1.0
+    with dissolve
+    pause .1
+    play sound sfx_keyboard_mouse
+    show mikan_ds_intro as mikan:
+        xpos .3
+        yalign .5
+
+    pause 2
+    stop sound
+
+    pause 3
+
+    hide code_mikan
+    hide mikan
+    hide mode_version
+    with fade2
+
+    $ prepare_everlasting_summer_dev_gallery()
+
+    pause 2
+
+
+    #jump es_dev_gallery
+
+    jump .initialize
+
+
+label .initialize:
+
+    $ initialize_everlasting_summer_dev_gallery()
+
+    scene stars
+
+    show screen esdg_settings
+
+    show screen esdg_gallery
+
+    show screen esdg_element_viewer
+
+    with pixellate
+
+    # pause #TODO
+
+    jump .cycle
+
+label .cycle: # цикл галлереи
+
+    $ renpy.block_rollback()
+
+    pause
+
+    jump .cycle
+
+label .show_displayable(displayable=Null(), name = "sprite", pos_at = center, trans=dissolve):
+
+    $ renpy.show(name, what=displayable, at_list=[pos_at])
+    with trans
+
+    return
+
+label .hide_displayable(name="sprite"):
+
+    #hide expression name
+    $ renpy.hide(name)
+    with dissolve
+
+    return
+
+label .show_scene(bg="black"):
+
+    scene expression bg
+    # with dspr
+
+    $ esdg.refresh_sprites()
+
+    return
+
+label .massive_sprites(sprites):
+
+    python:
+        for sprite in sprites:
+            renpy.show(sprite.name, what=sprite.create_diplayable(sprite.preference), at_list=[esdg.POSITIONS[sprite.preference["position"]]])
+    with dspr
+
+    return

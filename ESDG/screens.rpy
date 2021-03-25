@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-init offset = 998
 init:
 
     screen esdg_delay(t=1, a=NullAction(), tag_="esdg_delay"):

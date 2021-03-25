@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-init offset = 999
 init:
 
     transform esdg_focus_sprite(k=1.0, x=1920, y=1080, yk=.2):
@@ -34,6 +33,8 @@ label es_dev_gallery: # индекс
 
     # show image Text("{size=70}RedHead Team представляет{/size}", slow_cps = 25) at truecenter
 
+    jump .indev
+
     scene bg black
 
     show image Text(">>", size=190, color="#FC9") as code_mikan:
@@ -66,6 +67,11 @@ label es_dev_gallery: # индекс
 
     #jump es_dev_gallery
 
+    jump .initialize
+
+label .indev:
+
+    $ prepare_everlasting_summer_dev_gallery()
     jump .initialize
 
 
