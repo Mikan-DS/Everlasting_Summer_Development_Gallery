@@ -3,15 +3,43 @@ init:
 
     screen esdg_delay(t=1, a=NullAction(), tag_="esdg_delay"):
         timer t action [a, Hide(tag_)]
-        vbox:
-            text "Загрузка..."
-            text "("+tag_+")"
 
-    screen esdg_settings:
+        if "show" in tag_:
+            vbox:
+                text "Загрузка..."
+                text "("+tag_+")"
+
+    screen esdg_settings():
 
         zorder 800
 
-        showif esdg.settings_state:
+        # textbutton "R" action Jump("es_dev_gallery.initialize") yalign 0.99 xalign 0.99 text_size 30
+
+        hbox:
+            spacing 4
+            yalign 0.99
+            xalign 0.99
+
+            textbutton "Спрятать (H)":
+                text_size 30
+                at transform:
+                    on hover:
+                        linear .4 alpha 1.0
+                    on idle:
+                        linear .4 alpha 0.2
+                action HideInterface()
+
+            textbutton "Сцена":
+                text_size 30
+                at transform:
+                    on hover:
+                        linear .4 alpha 1.0
+                    on idle:
+                        linear .4 alpha 0.2
+                action Show("esdg_scene_preference", dissolve_fast)
+
+
+        showif esdg.settings:
 
             hbox:
                 at transform:
@@ -28,7 +56,8 @@ init:
 
                     background Frame(get_image("gui/ingame_menu/"+persistent.sprite_time+"/ingame_menu.png"), 125, 140)
 
-                    frame:
+
+                    frame: #TODO Not adapted
                         background Null()
                         padding (170, 80)
 
@@ -39,13 +68,11 @@ init:
                         vbox:
                             yalign .0
                             xalign .0
-                            first_spacing 30
                             spacing 20
-
-                            text "Настройки вида" style "settings_text" size 50 xalign .5
 
                             vbox:
                                 first_spacing 6
+                                xalign .5
                                 text "Время суток для спрайтов" style "settings_text" size 40
                                 hbox:
                                     spacing 20
@@ -55,7 +82,7 @@ init:
                                             add get_image("gui/settings/leaf.png") ypos 0.12
                                         else:
                                             add Null(width=22, height=29) ypos 0.12
-                                        textbutton "День" style "log_button" text_style "settings_text"  action esdg.day_time
+                                        textbutton "День" style "log_button" text_style "settings_text" text_size 30 action esdg.day_time
 
                                     hbox:
                                         spacing 6
@@ -63,7 +90,7 @@ init:
                                             add get_image("gui/settings/leaf.png") ypos 0.12
                                         else:
                                             add Null(width=22, height=29) ypos 0.12
-                                        textbutton "Закат" style "log_button" text_style "settings_text"  action esdg.sunset_time
+                                        textbutton "Закат" style "log_button" text_style "settings_text"  text_size 30 action esdg.sunset_time
 
                                     hbox:
                                         spacing 6
@@ -71,25 +98,52 @@ init:
                                             add get_image("gui/settings/leaf.png") ypos 0.12
                                         else:
                                             add Null(width=22, height=29) ypos 0.12
-                                        textbutton "Ночь" style "log_button" text_style "settings_text"  action esdg.night_time
-
+                                        textbutton "Ночь" style "log_button" text_style "settings_text" text_size 30  action esdg.night_time
 
                             if esdg.bg:
                                 vbox:
                                     first_spacing 6
                                     text "Фон" style "settings_text" size 40
 
-                                    textbutton esdg.translate(esdg.bg.name) style "log_button" text_style "settings_text" text_size 30 xpos .1 action Function(esdg.show_element, esdg.bg)
+                                    textbutton esdg.translate(esdg.bg.name) style "log_button" text_style "settings_text" text_size 30 xpos .1 action Function(esdg.select_element, esdg.bg)
 
                             if esdg.sprites:
                                 vbox:
                                     first_spacing 6
-                                    spacing 16
-                                    text "Спрайты" style "settings_text" size 40
+                                    spacing -10
 
-                                    for sprite in esdg.sprites:
-                                        textbutton esdg.translate(sprite) style "log_button" text_style "settings_text" text_size 30 xpos .1 action Function(esdg.show_element, esdg.sprites[sprite])
+                                    text "Спрайты" style "settings_text" size 35
 
+
+                                    for i, sprite in enumerate(esdg.sprites):
+                                        add get_image("gui/settings/bar_null.png") xzoom 1.6 xalign .5 yoffset -15
+
+                                        textbutton esdg.translate(sprite.name) style "log_button" text_style "settings_text" text_size 30 xpos .1 action Function(esdg.select_element, sprite)
+                                        hbox:
+                                            xalign 1.0
+                                            yoffset -30
+                                            at transform:
+                                                zoom .6
+                                            imagebutton:
+                                                idle "images/misc/up.png"
+                                                action Function(esdg.move_element, i, "up")
+
+                                            imagebutton:
+                                                idle "images/misc/down.png"
+                                                action Function(esdg.move_element, i, "down")
+
+
+                                        # hbox:
+                                        #     text str(i)
+                                        #     textbutton esdg.translate(sprite.name) style "log_button" text_style "settings_text" text_size 30 xpos .1 action Function(esdg.select_element, sprite)
+                                        #
+                                        #     imagebutton:
+                                        #         idle "images/misc/up.png"
+                                        #         action Function(esdg.move_element, i, "up")
+                                        #
+                                        #     imagebutton:
+                                        #         idle "images/misc/down.png"
+                                        #         action Function(esdg.move_element, i, "down")
 
 
                 imagebutton:
@@ -120,17 +174,15 @@ init:
 
                 action esdg.show_settings
 
-        textbutton "R" action Jump("es_dev_gallery.initialize") yalign 0.99 xalign 0.99 text_size 30
 
-
-
-
-    screen esdg_element_viewer:
+    screen esdg_element_viewer():
 
         zorder 790
 
-        showif esdg.selected_element[0]:
+        style_prefix "esdg_element_viewer"
 
+
+        showif esdg.element_viewer.state:
             hbox:
 
                 at transform:
@@ -146,214 +198,268 @@ init:
 
                     yalign 0.5
 
-                    action esdg.hide_element
+                    action esdg.deselect_element
 
                 frame:
-                    xmaximum 668
-                    ymaximum 1041
 
-                    background Null()
 
                     add get_image("gui/settings/history_bg.jpg"):
-                        crop (370, 110, 1388, 890)
+
+                        crop esdg.element_viewer_bg_crop
                         zoom .75
 
                         rotate 90
                         rotate_pad False
 
-                    if esdg.selected_element[1]:
-                        vbox:
-
-                            spacing 20
-                            first_spacing 40
 
 
-                            ypos .03
+                    hbox:
+                        xpos .01
+                        ypos .05
+                        viewport id "element_settings":
 
-                            add Null(height=1, width=668)
-
-                            hbox:
-
-                                xpos .05
-                                spacing 10
-
-                                frame:
-                                    xsize 336
-                                    ysize 196
-                                    background esdg.elements_background
-
-                                    if esdg.elements_background_2 and not esdg.selected_element[1].collection in ["bg", "cg"]:
-                                        add esdg.elements_background_2 align (.5, .5)
-
-                                    add esdg.selected_element[1].preview:
-                                        zoom .166
-                                        xalign .5
-                                        yalign 1.0
-
-                                vbox:
-                                    spacing 10
-                                    first_spacing 20
-                                    xsize 200
-
-                                    text esdg.translate(esdg.selected_element[1].name)  style "settings_text" size 40 bold True xalign .5
+                            mousewheel True
+                            pagekeys True
 
 
-                                    text "Тип: " + esdg.selected_element[1].collection  style "settings_text" size 34
-                                    for info in esdg.selected_element[1].extra:
-
-                                        text info+": " + esdg.selected_element[1].extra[info]  style "settings_text" size 34
-
-                            hbox:
-
-                                xpos .05
+                            scrollbars None
+                            if renpy.mobile:
+                                draggable True
 
 
-                                viewport id "element_settings":
-                                    mousewheel True
-
-                                    area (0, 0, 640, 580) # 540, 530
+                            area esdg.element_viewer_viewport_area
 
 
-                                    # add Solid("AAA", ysize=3000)
+
+
+                            vbox:
+                                spacing 20
+
+
+                                xfill True
+
+
+
+                                if isinstance(esdg.element_viewer, EsdgElement):
+
+
+                                    hbox:
+
+
+                                        spacing 10
+                                        xpos .05
+
+                                        frame:
+                                            xsize esdg.x_preview_size ysize esdg.y_preview_size
+
+
+                                            add Solid("#6d4e39F0", xysize=esdg.preview_size) align (.5, .5)
+
+                                            if esdg.element_viewer.collection != "bg":
+                                                add esdg.elements_background align (.5, .5)
+
+                                            add esdg.element_viewer.preview  align (.5, 1.0)
+
+
+
+                                        # frame:
+                                        #     xysize esdg.preview_size
+                                        #     background Solid("#6d4e39F0")
+                                        #     frame:
+                                        #         xalign .5 yalign .5
+                                        #         xsize esdg.x_preview_size ysize esdg.y_preview_size
+                                        #         background esdg.elements_background # Solid("#48C")
+                                        #
+                                        #         add esdg.element_viewer.preview
+
+                                        vbox:
+                                            spacing 10
+                                            first_spacing 20
+                                            xsize 200
+
+                                            text esdg.translate(esdg.element_viewer.name) size 40 bold True xalign .5
+
+
+                                            text "Тип: " + esdg.element_viewer.collection
+                                            for info in esdg.element_viewer.extra:
+
+                                                text info+": " + esdg.element_viewer.extra[info]
+
+                                    textbutton "Копировать код" style "log_button" text_style "settings_text" action CopyCode(esdg.element_viewer.code) xpos .05 yalign .5
+
+                                    for button_ in esdg.element_viewer.actions:
+                                        textbutton button_ style "log_button" text_style "settings_text" action esdg.element_viewer.actions[button_] xpos .05 yalign .5
+
+
 
                                     vbox:
 
-                                        spacing 20
+                                        spacing 10
 
-                                        # frame:
-                                        #     background Solid("AAA") #"1A1A77"
+                                        xpos .05
 
-                                        # hbox:
-                                        #     spacing 4
-                                        #
-                                        #     text "{font=fonts/corbelb.ttf}{color=#1A1A77}"+esdg.selected_element[1].code+"{/color}{/font}" yalign .5
-                                        #
-                                        #     text " | " yalign .5
+                                        $ settings = esdg.element_viewer.get_settings()
 
-                                        textbutton "Копировать код" style "log_button" text_style "settings_text" action CopyCode(esdg.selected_element[1].code) yalign .5
+                                        for setting in settings["image"]:
 
-                                        for button_ in esdg.selected_element[1].actions:
-                                            textbutton button_ style "log_button" text_style "settings_text" action esdg.selected_element[1].actions[button_] yalign .5
+                                            $ setting_data = settings["image"][setting]
 
-                                        $ settings = esdg.selected_element[1].get_settings()
+                                            add get_image("gui/settings/bar_null.png") xzoom 1.9 yzoom 1.3 xpos .02
 
-                                        $ image_settings = settings["image"]
+                                            text esdg.translate(setting) style "esdg_element_viewer_text"
 
-                                        for setting in image_settings:
-
-                                            $ setting_data = image_settings[setting]
-
-                                            vbox:
-                                                spacing 3
-
-                                                add get_image("gui/settings/bar_null.png") xzoom 1.67 xpos .07
-
-                                                text esdg.translate(setting) style "settings_text" size 37 bold True xalign .1
-
-                                                frame:
-                                                    area (0, 0, 696, 196)
-                                                    background Null()
-
-                                                    at transform:
-                                                        zoom .8
-                                                    viewport id setting:
-                                                        mousewheel "horizontal"
-
-                                                        hbox:
-                                                            spacing 5
-
-                                                            for button_ in setting_data:
-                                                                frame:
-                                                                    xsize 336
-                                                                    ysize 196
-                                                                    background esdg.elements_background
-
-                                                                    if esdg.elements_background_2 and not esdg.selected_element[1].collection in ["bg", "cg"]:
-                                                                        add esdg.elements_background_2 align (.5, .5)
-
-                                                                    if button_[0]:
-                                                                        add button_[1]:
-                                                                            zoom .166
-                                                                            xalign .5
-                                                                            yalign 1.0
-                                                                    else:
-                                                                        add Text("X", color="F00", bold=True, size=800):
-                                                                            zoom .166
-                                                                            xalign .5
-                                                                            yalign .5
-
-                                                                    if esdg.selected_element[1].preference[setting] == button_[0]:
-                                                                        add Solid("#4C4", xsize=30, ysize=196) yalign .5
-                                                                    else:
-                                                                        add Null(width=30, height=196) yalign .5
-
-                                                                        imagebutton:
-                                                                            align (.5, .5)
-                                                                            idle get_image("gui/gallery/blank.png")
-                                                                            hover Solid("#FFF3", xsize=320, ysize=180)
-
-                                                                            action Function(esdg.selected_element[1].callback, setting, button_[0])
+                                            hbox:
 
 
-                                                bar value XScrollValue(setting) ysize 36 xmaximum 556 left_bar "images/misc/none.png" right_bar "images/misc/none.png" thumb "images/gui/settings/htumb.png"
+                                                box_wrap True
+                                                xpos .07
 
-                                        $ text_settings = settings["text"]
+                                                spacing 4
+                                                box_wrap_spacing 4
 
-                                        for setting in text_settings:
 
-                                            $ setting_data = text_settings[setting]
-                                            vbox:
-                                                spacing 3
 
-                                                add get_image("gui/settings/bar_null.png") xzoom 1.67 xpos .07
+                                                for button_ in setting_data:
 
-                                                text esdg.translate(setting) style "settings_text" size 37 bold True xalign .1
+                                                    frame:
+                                                        xsize esdg.x_preview_size ysize esdg.y_preview_size
 
-                                                for i in range(len(setting_data)//3):
+                                                        at transform:
+                                                            zoom .75
+
+                                                        add Solid("#6d4e39D0", xysize=esdg.preview_size) align (.5, .5)
+
+                                                        if esdg.element_viewer.collection != "bg":
+                                                            add esdg.elements_background align (.5, .5)
+
+                                                        if button_[0]:
+                                                            add button_[1] xalign .5 yalign 1.0
+                                                        else:
+                                                            add Text("X", color="F00", bold=True, size=esdg.y_size):
+                                                                zoom .166
+                                                                xalign .5
+                                                                yalign .5
+                                                        imagebutton:
+                                                            align (.5, .5)
+                                                            idle get_image("gui/gallery/blank.png")
+                                                            hover Solid("#FFF3")
+                                                            action Function(esdg.element_viewer.callback, setting, button_[0])
+
+                                                    # frame:
+                                                    #
+                                                    #     xysize esdg.preview_size
+                                                    #     background Solid("#6d4e39D0")
+                                                    #     at transform:
+                                                    #         zoom .75
+                                                    #
+                                                    #     # frame:
+                                                    #     #     xalign .5 yalign .5
+                                                    #     #     background esdg.elements_background
+                                                    #     #
+                                                    #     #     add button_[1] xalign .5 yalign 1.0
+                                                    #     #
+                                                    #     # imagebutton:
+                                                    #     #     align (.5, .5)
+                                                    #     #     idle get_image("gui/gallery/blank.png")
+                                                    #     #     hover_foreground Solid("#FFF3")
+                                                    #
+                                                    #
+                                                    #     imagebutton:
+                                                    #         xalign .5 yalign .5
+                                                    #         xsize esdg.x_preview_size ysize esdg.y_preview_size
+                                                    #         background esdg.elements_background
+                                                    #         idle button_[1]
+                                                    #         hover_foreground Solid("#AAA5")
+                                                    #         action Function(esdg.element_viewer.callback, setting, button_[0])
+
+                                        for setting in settings["text"]:
+
+                                            $ setting_data = settings["text"][setting]
+
+                                            add get_image("gui/settings/bar_null.png") xzoom 1.9 yzoom 1.3 xpos .02
+
+                                            text esdg.translate(setting) style "esdg_element_viewer_text"
+
+                                            hbox:
+
+
+                                                box_wrap True
+                                                xpos .01
+
+                                                xmaximum int(esdg.element_viewer_viewport_area[2]*.8)
+
+                                                spacing 4
+                                                box_wrap_spacing 4
+
+                                                for button_ in setting_data:
                                                     hbox:
-                                                        spacing 4
-                                                        xalign .5
-                                                        for k in range(3):
-                                                            $ button_ = setting_data[i*3+k]
-                                                            hbox:
-                                                                spacing 6
-                                                                if esdg.selected_element[1].preference[setting] == button_:
-                                                                    add get_image("gui/settings/leaf.png") ypos 0.12
-                                                                else:
-                                                                    add Null(width=22, height=29) ypos 0.12
+                                                        spacing 3
+                                                        if esdg.element_viewer.preference[setting] == button_:
+                                                            add get_image("gui/settings/leaf.png") ypos 0.12
+                                                        else:
+                                                            add Null(width=22, height=29) ypos 0.12
 
-                                                                textbutton (esdg.translate(button_) or "X") style "log_button" text_style "settings_text" text_size 38 action Function(esdg.selected_element[1].callback, setting, button_)
-                                                if len(setting_data)%3:
-                                                    $ i += 1
-                                                    hbox:
-                                                        spacing 4
-                                                        xalign .5
-                                                        for k in range(len(setting_data)%3):
-                                                            $ button_ = setting_data[i*3+k]
-                                                            hbox:
-                                                                spacing 6
-                                                                if esdg.selected_element[1].preference[setting] == button_:
-                                                                    add get_image("gui/settings/leaf.png") ypos 0.12
-                                                                else:
-                                                                    add Null(width=22, height=29) ypos 0.12
-
-                                                                textbutton (esdg.translate(button_) or "X") style "log_button" text_style "settings_text" text_size 38 action Function(esdg.selected_element[1].callback, setting, button_)
+                                                        textbutton (esdg.translate(button_) or "X") style "log_button" text_style "settings_text" text_size 38 action Function(esdg.element_viewer.callback, setting, button_)
 
 
-                                add get_image("gui/settings/vbar_null.png") yzoom 1.9 xoffset -80
 
-                                vbar value YScrollValue("element_settings") ymaximum 430 yalign .5 bottom_bar "images/misc/none.png" top_bar "images/misc/none.png" thumb "images/gui/settings/vthumb.png" thumb_offset -92 xoffset -60
+                        vbar value YScrollValue("element_settings"):
+
+                            style "esdg_element_viewer_vbar"
 
 
-    screen esdg_gallery:
+                            bar_invert True
+
+                            yalign .5
+
+                            ymaximum esdg.element_viewer_viewport_area[3]
+
+                            bottom_bar "images/misc/none.png"
+                            top_bar "images/misc/none.png"
+                            thumb "images/gui/settings/vthumb.png"
+
+    style esdg_element_viewer_text is text:
+
+        color "#4d2e19"
+        size 34
+
+    style esdg_element_viewer_frame is default:
+
+        xmaximum 668
+        ymaximum 1041
+
+        background Null()
+
+    style esdg_element_viewer_frame:
+
+        variant "mobile"
+
+        xmaximum 445
+        ymaximum 694
+
+        background Null()
+
+
+    style esdg_element_viewer_vbar:
+
+        # thumb_offset -92
+        xoffset -40
+
+    style esdg_element_viewer_vbar:
+
+        variant "mobile"
+
+        # thumb_offset -92
+        xoffset -27
+
+    screen esdg_gallery():
 
         zorder 900
 
+        style_prefix "esdg_gallery"
 
-
-        showif esdg.gallery_state:
-
-            imagebutton:
+        showif esdg.gallery.state:
+            imagebutton: # Блокировка остальных окон
                 idle Solid("0004")
                 at transform:
                     on show:
@@ -364,16 +470,10 @@ init:
 
                 action NullAction()
 
-
             frame:
 
-                xmaximum 1388
-                ymaximum 890
-
                 at transform:
-
                     align (.5, 1.0)
-
                     on show:
                         yalign 8.0
                         ease .5 yalign 1.0
@@ -381,90 +481,178 @@ init:
                         ease .5 yalign 8.0
 
 
-                background Crop((370, 110, 1388, 890), get_image("gui/settings/history_bg.jpg"))
 
-                if esdg.gallery_collection:
-                    $ gallery_data = esdg_collections[esdg.gallery_collection]
-                    $ gallery_tags = list(gallery_data)
+                imagebutton:
+                    auto "images/gui/dialogue_box/day/backward_%s.png"
 
-                    text esdg.gallery_collection style "settings_text" size 45 bold True xalign .5 yalign .0
-                    frame:
-                        background Null()
+                    xalign .99 yalign .01
 
-                    imagebutton:
-                        auto "images/gui/dialogue_box/day/backward_%s.png"
+                    action esdg.hide_gallery
 
-                        xalign .99 yalign .01
+                if esdg.gallery.__class__ == EsdgGallery:
 
-                        action esdg.hide_gallery
+                    text esdg.gallery.name xalign .5 yalign .07 style "settings_text" size 70
 
                     hbox:
-                        xpos .05
-                        ypos .05
 
-                        viewport id "gallery":
-                            mousewheel True
+                        style "esdg_gallery_gallerylist"
 
-                            area (0, 0, 1050, 790)
 
-                            #add Solid("AAA", ysize=5000)
-                            vbox:
-                                spacing 20
+                        for i in esdg.gallery.page():
 
-                                for i in range(len(gallery_tags)//3):
-                                    hbox:
-                                        spacing 5
-                                        for k in range(3):
-                                            $ button_ = gallery_data[gallery_tags[i*3+k]]
-                                            frame:
-                                                xsize 336
-                                                ysize 196
-                                                background esdg.elements_background
+                            frame:
+                                style "default"
+                                xsize esdg.x_preview_size ysize esdg.y_preview_size
 
-                                                if esdg.elements_background_2 and not esdg.gallery_collection in ["bg", "cg"]:
-                                                    add esdg.elements_background_2 align (.5, .5)
+                                add Solid("#6d4e39D0", xysize=esdg.preview_size) align (.5, .5)
 
-                                                add button_.preview:
-                                                    zoom .166
-                                                    xalign .5
-                                                    yalign 1.0
+                                if i.collection != "bg":
+                                    add esdg.elements_background align (.5, .5)
+                                add i.preview xalign .5 yalign 1.0
 
-                                                imagebutton:
-                                                    align (.5, .5)
-                                                    idle get_image("gui/gallery/blank.png")
-                                                    hover Solid("#FFF3", xsize=320, ysize=180)
+                                imagebutton:
+                                    align (.5, .5)
+                                    idle get_image("gui/gallery/blank.png")
+                                    hover Solid("#FFF3")
+                                    action Function(esdg.add_element, i)
 
-                                                    action Function(esdg.add_element, button_)
+                            # frame:
+                            #
+                            #     xysize esdg.preview_size
+                            #     background Solid("#6d4e39D0")
+                            #     imagebutton:
+                            #         xalign .5 yalign .5
+                            #         xsize esdg.x_preview_size ysize esdg.y_preview_size
+                            #         background esdg.elements_background # Solid("#48C")
+                            #         idle i.preview
+                            #         hover_foreground Solid("#AAA5")
+                            #         action Function(esdg.add_element, i)
 
-                                $ i += 1
-                                for k in range(len(gallery_tags)%3):
-                                    $ button_ = gallery_data[gallery_tags[i*3+k]]
-                                    frame:
-                                        xsize 336
-                                        ysize 196
-                                        background esdg.elements_background
+                    hbox:
 
-                                        if esdg.elements_background_2 and not esdg.gallery_collection in ["bg", "cg"]:
-                                            add esdg.elements_background_2 align (.5, .5)
+                        yalign .92
+                        xalign .5
 
-                                        add button_.preview:
-                                            zoom .166
-                                            xalign .5
-                                            yalign 1.0
+                        textbutton "<" style "log_button" text_size 50 action esdg.gallery.back_page
+                        text "Страница №"+str(esdg.gallery._page+1)+"/"+str(esdg.gallery.page_maximum+1) style "settings_text" size 50
+                        textbutton ">" style "log_button" text_size 50 action esdg.gallery.next_page
 
-                                        imagebutton:
-                                            align (.5, .5)
-                                            idle get_image("gui/gallery/blank.png")
-                                            hover Solid("#FFF3", xsize=320, ysize=180)
 
-                                            action Function(esdg.add_element, button_)
 
-                        vbar value YScrollValue("gallery") yalign .5 ymaximum 790 bottom_bar "images/misc/none.png" top_bar "images/misc/none.png" thumb "images/gui/settings/vthumb.png" thumb_offset -12
 
         hbox:
             xalign 0.5
             yalign 1.0
 
-            textbutton "bg" text_size 36 action Function(esdg.show_gallery, "bg")
-            textbutton "sprites" text_size 36 action Function(esdg.show_gallery, "sprites")
-            # textbutton "cg" text_size 36 action Function(esdg.show_gallery, "cg")
+            # textbutton "N" action Function(esdg.show_gallery, esdg.galleries["Number"])
+
+            textbutton "bg":
+                at transform:
+                    on hover:
+                        linear .4 alpha 1.0
+                    on idle:
+                        linear .4 alpha 0.7
+                action Function(esdg.show_gallery, esdg.galleries["bg"])
+            textbutton "sprites":
+                at transform:
+                    on hover:
+                        linear .4 alpha 1.0
+                    on idle:
+                        linear .4 alpha 0.7
+                action Function(esdg.show_gallery, esdg.galleries["sprites"])
+            textbutton "cg":
+                at transform:
+                    on hover:
+                        linear .4 alpha 1.0
+                    on idle:
+                        linear .4 alpha 0.7
+                action Function(esdg.show_gallery, esdg.galleries["cg"])
+
+    style esdg_gallery_frame is default:
+
+        xsize 1388 # .723
+        ysize 890 # .824
+
+
+        background Crop((370, 110, 1388, 890), get_image("gui/settings/history_bg.jpg"))
+
+    style esdg_gallery_frame:
+        variant "small"
+        xsize 925
+        ysize 593
+
+        background Crop((246, 110, 925, 593), get_image("gui/settings/history_bg.jpg"))
+
+
+    style esdg_gallery_button is button
+
+    style esdg_gallery_button_text is settings_text:
+        size 36
+
+    style esdg_gallery_gallerylist is default:
+
+        xpos .05
+        ypos .15
+
+
+        spacing 36 #20
+
+        box_wrap True
+        box_wrap_spacing 26 #10
+
+    style esdg_gallery_gallerylist:
+
+        variant "mobile"
+
+        xpos .05
+        ypos .15
+
+        spacing 27#11
+
+        box_wrap True
+        box_wrap_spacing 22#6
+
+
+    screen esdg_scene_preference():
+
+        zorder 999
+
+        imagebutton: # Блокировка остальных окон
+            idle Solid("0002")
+            at transform:
+                on show:
+                    alpha 0
+                    ease .5 alpha 1.0
+                on hide:
+                    ease .5 alpha 0.0
+            action Hide("esdg_scene_preference", dissolve_fast)
+
+        frame:
+            background Solid("#ebe3b8")
+
+            xysize (.7, .7)
+
+            align (.5, .5)
+
+            add Solid("#1e1f21", xysize=(.4, .6)) align (.01, .05)
+
+            $ code = esdg.code_all()
+
+            viewport:
+                align (.01, .05)
+                xysize (.4, .6)
+                scrollbars True
+
+                text esdg.color_code(code)# align (.5, .5)
+
+            vbox:
+                align (.57, .3)
+                spacing 20
+                textbutton "Копировать в буфер обмена" style "log_button"  text_style "settings_text"  action CopyCode(code) text_size 30
+                textbutton "Открыть в текстовом файле" style "log_button"  text_style "settings_text"  action OpenFileCode(code) text_size 30
+                textbutton "{color=#a56870}Обнулить сцену{/color}" style "log_button"  action Jump("es_dev_gallery.initialize") text_size 30
+
+                null
+                null
+
+                textbutton "{color=#39f}Написать отзыв =){/color}" style "log_button"  action OpenURL("https://vk.com/topic-203508980_47492565") text_size 30

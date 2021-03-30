@@ -1,24 +1,29 @@
 # -*- coding: utf-8 -*-
 init:
 
-    transform esdg_focus_sprite(k=1.0, x=1920, y=1080, yk=.2):
+    transform esdg_focus_sprite(x=900, k=1.0, h=.2):
+
+
 
         zoom float(k)
+        #crop (0, (y-y*(1/k))*yk, x, y*(1/k))
+        crop (0, esdg.y_size*h*k, esdg.x_size, esdg.y_size)
+
+        xalign .5
+        yalign 1.0
+
+    transform esdg_transform(xalign=.5, # Заготовка для будующего окна
+                             yalign=1.0):
+        xalign xalign
+        yalign yalign
 
 
-        crop (0, (y-y*(1/k))*yk, x, y*(1/k))
 
+    # default esdg = ESDG() # persistent
 
-    default esdg = ESDG()
-
-    default esdg.selected_element = [None, None]
-    default esdg.elements_background = Null()#"images/gui/gallery/not_opened_idle.png"
-
-    default esdg_collections = None
+    # default esdg_collections = None # persistent
 
     image mikan_ds_intro:
-        # Text(">>", size=190)
-        # pause .8
         Text("Mikan-DS", size=190, slow_cps = 6)
         pause 1.9
         block:
@@ -31,16 +36,14 @@ init:
 
 label es_dev_gallery: # индекс
 
-    # show image Text("{size=70}RedHead Team представляет{/size}", slow_cps = 25) at truecenter
-
-    jump .indev
+    jump .initialize пропускать заставку
 
     scene bg black
 
     show image Text(">>", size=190, color="#FC9") as code_mikan:
         xpos .14
         yalign .5
-    show image Text("1.21.3.24", size=10) as mode_version:
+    show image Text("1.21.3.29", size=10) as mode_version:
         xalign 1.0
         yalign 1.0
     with dissolve
@@ -60,24 +63,25 @@ label es_dev_gallery: # индекс
     hide mode_version
     with fade2
 
-    $ prepare_everlasting_summer_dev_gallery()
+
 
     pause 2
 
 
-    #jump es_dev_gallery
-
     jump .initialize
 
-label .indev:
-
-    $ prepare_everlasting_summer_dev_gallery()
-    jump .initialize
 
 
 label .initialize:
 
     $ initialize_everlasting_summer_dev_gallery()
+    # pause #TODO
+
+    jump .restart
+
+label .restart:
+
+    $ esdg.init()
 
     scene stars
 
@@ -88,8 +92,6 @@ label .initialize:
     show screen esdg_element_viewer
 
     with pixellate
-
-    # pause #TODO
 
     jump .cycle
 
@@ -119,17 +121,19 @@ label .hide_displayable(name="sprite"):
 label .show_scene(bg="black"):
 
     scene expression bg
+
     # with dspr
 
     $ esdg.refresh_sprites()
 
     return
 
-label .massive_sprites(sprites):
+label .massive_sprites:
 
     python:
-        for sprite in sprites:
-            renpy.show(sprite.name, what=sprite.create_diplayable(sprite.preference), at_list=[esdg.POSITIONS[sprite.preference["position"]]])
+        for sprite in reversed(esdg.sprites):
+            renpy.hide(sprite.name)
+            renpy.show(sprite.name, what=esdg.timed_sprite(sprite.create_displayable()), at_list=[esdg.POSITIONS[sprite.preference["position"]]])
     with dspr
 
     return
