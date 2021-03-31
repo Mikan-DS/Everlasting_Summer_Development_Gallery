@@ -73,6 +73,14 @@ init python:
                 "zvariants": "Другие варианты",
 
 
+                "sprites": "Спрайты",
+                "bg": "Фоны",
+                "cg": "Иллюстрации",
+                "CG": "Иллюстрация",
+
+
+
+
 
                 "emotion": "Эмоции",
                 "dress": "Одежда",
@@ -269,14 +277,14 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
                     sprite
             )
 
-        def zoom_to_preview(self, image):
+        def zoom_to_preview(self, img):
             """
             Метод для упрощения адаптирование изображения
             из размера экрана по коэффиценту размеру стандартного
             превью.
             """
-            # assert not isinstance(image, Displayable) #
-            return At(image, esdg_focus_sprite(k=.1666))
+            # assert not isinstance(img, Displayable) #
+            return At(img, esdg_zoom_image(k=.1666))
 
 
         # Методы для работы с выводом кода
@@ -613,7 +621,7 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
             return self._data[cg]
 
         def create_preview(self, _preference=None):
-            return esdg.zoom_to_preview(self.create_displayable(_preference))
+            return self.create_displayable(_preference) # esdg.zoom_to_preview()
 
         def get_settings(self):
             return {"image": self._settings, "text": {}}
@@ -705,7 +713,7 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
             return self._data[bg]
 
         def create_preview(self, _preference=None):
-            return esdg.zoom_to_preview(self.create_displayable(_preference))
+            return self.create_displayable(_preference) # esdg.zoom_to_preview(
 
         def get_settings(self):
             return {"image": self._settings, "text": {}}
@@ -759,6 +767,9 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
 
             self.cash = cash or {} # cache занят
             self._emotions = _emotions or {}
+
+            self._k = 1.0
+
 
             if _emotions and default_preference:# Если все уже найдено, то просто присваивает значения
 
@@ -879,49 +890,43 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
             cash = self._pose(preference["emotion"])+str(name)+"_"+str(value)
 
             if cash in self.cash:
-                image = self.cash[cash]
-            else: #FIXME
-                # Когда нибудь, я тут все настрою! Наверное...
+                img = self.cash[cash]
+            else:
 
-                image = self.create_displayable(preference)
+                k = 2.2
+                chk = 1.0
+                h=0
+
+
+                if self.name == "us":
+                    chk = 1.55
+                elif self.name == "uv":
+                    chk = 1.3
+                elif self.name in ["mi", "mz"]:
+                    chk = 1.2
+                elif self.name in ["sl", "dv", "un"]:
+                    chk = 1.1
+
 
                 if name == "dress":
-                    k = 1.83
-                    h = .15
-                elif name == "accessory":
-                    k = 1.93
-                    h = -0.05
-                else:
-                    k = 2.2
                     h = 0
+                    k = 1.6
+                else:
+                    h = -1.1
 
-                if self.name in ["dv", "sl", "mi", "un"]:
-                    h += 0.03
-                elif self.name in ["us", "uv"]:
-                    if name == "dress":
-                        h += 0.08
-                    elif not name:
-                        h += 0.15
-                        k += .2
-                    else:
-                        h += 0.1
-                    k += .2
+                k*=chk
 
-                elif self.name == "mz":
+                h+=(k)-1
 
-                    if name == "accessory":
-                        k = 2.2
-                        h += 0.1
-                    else:
-                        h += 0.05
+                img = At(self.create_displayable(preference), esdg_focus_sprite(self._width(preference["distance"]), k, h))
 
 
-                image = At(image, esdg_focus_sprite(self._width(preference["distance"]), k, h))
+                self.cash[cash] = img
 
 
-                self.cash[cash] = image
+            return img
 
-            return esdg.zoom_to_preview(image)
+
 
 
 
@@ -1099,7 +1104,7 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
         cgs = {}
 
         for file in renpy.list_files():
-            if file.startswith("images/cg/") and not "cards_contest" in file:
+            if file.startswith("images/cg/") and not "cards_contest" in file and not "d2_2ch_beach" in file:
 
                 name = file.split("/")[-1][:-4]
 

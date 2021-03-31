@@ -1,14 +1,28 @@
 # -*- coding: utf-8 -*-
 init:
 
-    transform esdg_focus_sprite(x=900, k=1.0, h=.2):
+    # transform esdg_focus_sprite(x=900, k=1.0, h=.2):
+    #
+    #
+    #
+    #     zoom float(k)
+    #     #crop (0, (y-y*(1/k))*yk, x, y*(1/k))
+    #     # crop (0, esdg.y_size*k*h, x, 1080)
+    #     #
+    #     # xalign .5
+    #     # yalign 1.0
+
+    transform esdg_focus_sprite(x=1920, k=1.0, h=.2):
+
+        crop (0, esdg.y_size*(1/k)*h, x, esdg.y_size*(1/(k))) # -esdg.y_size*h*k*(1/chk)
+        zoom float(k)
 
 
+
+
+    transform esdg_zoom_image(k=1.0):
 
         zoom float(k)
-        #crop (0, (y-y*(1/k))*yk, x, y*(1/k))
-        crop (0, esdg.y_size*h*k, esdg.x_size, esdg.y_size)
-
         xalign .5
         yalign 1.0
 
@@ -36,14 +50,14 @@ init:
 
 label es_dev_gallery: # индекс
 
-    jump .initialize пропускать заставку
+    # jump .initialize # пропускать заставку
 
     scene bg black
 
     show image Text(">>", size=190, color="#FC9") as code_mikan:
         xpos .14
         yalign .5
-    show image Text("1.21.3.29", size=10) as mode_version:
+    show image Text("1.21.3.31", size=10) as mode_version:
         xalign 1.0
         yalign 1.0
     with dissolve

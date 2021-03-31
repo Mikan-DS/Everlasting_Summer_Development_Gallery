@@ -20,6 +20,8 @@ init:
             yalign 0.99
             xalign 0.99
 
+            # textbutton "R" action Jump("es_dev_gallery") yalign 0.99 xalign 0.99 text_size 30 # for debug
+
             textbutton "Спрятать (H)":
                 text_size 30
                 at transform:
@@ -249,19 +251,35 @@ init:
                                         spacing 10
                                         xpos .05
 
+                                        # frame:
+                                        #     xsize esdg.x_preview_size ysize esdg.y_preview_size
+                                        #
+                                        #
+                                        #     add Solid("#6d4e39F0", xysize=esdg.preview_size):
+                                        #         anchor (.5, .5)
+                                        #         xalign .5
+                                        #         yalign .5
+                                        #
+                                        #     if esdg.element_viewer.collection != "bg":
+                                        #         add esdg.elements_background align (.5, .5)
+                                        #
+                                        #     add esdg.element_viewer.preview  align (.5, 1.0)
+                                        #
+                                        #
                                         frame:
-                                            xsize esdg.x_preview_size ysize esdg.y_preview_size
+                                            xysize esdg.preview_size
+                                            background Solid("#6d4e39F0")
+                                            frame:
+                                                background None
+                                                xalign .5 yalign .5
+                                                xsize esdg.x_preview_size ysize esdg.y_preview_size
+                                                if esdg.element_viewer.collection != "bg":
+                                                    add esdg.elements_background align (.5, .5)
 
-
-                                            add Solid("#6d4e39F0", xysize=esdg.preview_size) align (.5, .5)
-
-                                            if esdg.element_viewer.collection != "bg":
-                                                add esdg.elements_background align (.5, .5)
-
-                                            add esdg.element_viewer.preview  align (.5, 1.0)
-
-
-
+                                                add esdg.element_viewer.preview:
+                                                    zoom .166
+                                                    align (.5, 1.0)
+                                        #
                                         # frame:
                                         #     xysize esdg.preview_size
                                         #     background Solid("#6d4e39F0")
@@ -333,7 +351,10 @@ init:
                                                             add esdg.elements_background align (.5, .5)
 
                                                         if button_[0]:
-                                                            add button_[1] xalign .5 yalign 1.0
+                                                            add button_[1]:
+                                                                zoom .166
+                                                                xalign .5
+                                                                yalign 1.0
                                                         else:
                                                             add Text("X", color="F00", bold=True, size=esdg.y_size):
                                                                 zoom .166
@@ -491,7 +512,7 @@ init:
 
                 if esdg.gallery.__class__ == EsdgGallery:
 
-                    text esdg.gallery.name xalign .5 yalign .07 style "settings_text" size 70
+                    text esdg.translate(esdg.gallery.name) xalign .5 yalign .07 style "settings_text" size 70
 
                     hbox:
 
@@ -508,7 +529,10 @@ init:
 
                                 if i.collection != "bg":
                                     add esdg.elements_background align (.5, .5)
-                                add i.preview xalign .5 yalign 1.0
+                                add i.preview:
+                                    zoom .166
+                                    xalign .5
+                                    yalign 1.0
 
                                 imagebutton:
                                     align (.5, .5)
