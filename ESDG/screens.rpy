@@ -570,27 +570,36 @@ init:
 
             # textbutton "N" action Function(esdg.show_gallery, esdg.galleries["Number"])
 
-            textbutton "bg":
-                at transform:
-                    on hover:
-                        linear .4 alpha 1.0
-                    on idle:
-                        linear .4 alpha 0.7
-                action Function(esdg.show_gallery, esdg.galleries["bg"])
-            textbutton "sprites":
-                at transform:
-                    on hover:
-                        linear .4 alpha 1.0
-                    on idle:
-                        linear .4 alpha 0.7
-                action Function(esdg.show_gallery, esdg.galleries["sprites"])
-            textbutton "cg":
-                at transform:
-                    on hover:
-                        linear .4 alpha 1.0
-                    on idle:
-                        linear .4 alpha 0.7
-                action Function(esdg.show_gallery, esdg.galleries["cg"])
+            # textbutton "bg":
+            #     at transform:
+            #         on hover:
+            #             linear .4 alpha 1.0
+            #         on idle:
+            #             linear .4 alpha 0.7
+            #     action Function(esdg.show_gallery, esdg.galleries["bg"])
+            # textbutton "sprites":
+            #     at transform:
+            #         on hover:
+            #             linear .4 alpha 1.0
+            #         on idle:
+            #             linear .4 alpha 0.7
+            #     action Function(esdg.show_gallery, esdg.galleries["sprites"])
+            # textbutton "cg":
+            #     at transform:
+            #         on hover:
+            #             linear .4 alpha 1.0
+            #         on idle:
+            #             linear .4 alpha 0.7
+            #     action Function(esdg.show_gallery, esdg.galleries["cg"])
+
+            for gallery in esdg.galleries:
+                textbutton gallery action Function(esdg.show_gallery, esdg.galleries[gallery]) at esdg_gallery_textbutton_transform
+
+    transform esdg_gallery_textbutton_transform:
+        on hover:
+            linear .4 alpha 1.0
+        on idle:
+            linear .4 alpha 0.7
 
     style esdg_gallery_frame is default:
 

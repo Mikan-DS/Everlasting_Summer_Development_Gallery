@@ -10,6 +10,7 @@ init python:
     class ESDG(object):
         """Специальный класс для хранения переменных, что бы было меньше путаницы."""
 
+        mod_init_galleries = set()
         def __init__(self):
             object.__setattr__(self, "__dict__", {})
 
@@ -87,6 +88,8 @@ init python:
                 "accessory": "Аксессуар",
                 "distance": "Дальность",
                 "position": "Позиция",
+
+                "body": "Вариации тел",
 
                 "close": "Близко",
                 "normal": "Обычно",
@@ -216,6 +219,9 @@ init python:
 
             self.galleries["cg"] = EsdgGallery("cg", cg_objects)
 
+            for init_mod_gallery in ESDG.mod_init_galleries:
+                init_mod_gallery()
+
         def exception(self, check, message=""):
             """
             Так как трейсбек перестает работать, приходится отдельно
@@ -313,14 +319,29 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
         def color_code(self, code):
 
             code = re.sub(r"(#[^\n]*)", r"{color=#a56870}\1{/color}", code)
-            code = re.sub(r'("[^\n]*")', r"{color=#446e41}\1{/color}", code)
+            code = re.sub(r'("[^\n"]*")', r"{color=#446e41}\1{/color}", code)
 
-            for i in ["show", "scene", "with", "at", "$"]:
+            for i in [r"image ", r"show ", r"scene ", r"with ", r" at ", r"$"]:
                 #code = re.sub(r'(show|scene|$)', r"{color=#a78e66}\1{/color}", code)
                 code = code.replace(i, "{color=#fc6}"+i+"{/color}" )
             return code
 
+        def timed_wrap(self, code, comment):
 
+            return "ConditionSwitch("+comment+"""
+                "persistent.sprite_time=='sunset'",
+                    im.MatrixColor(
+{sprite},
+                        im.matrix.tint(0.94, 0.82, 1.0)
+                        ),
+                "persistent.sprite_time=='night'",
+                    im.MatrixColor(
+{sprite},
+                        im.matrix.tint(0.63, 0.78, 0.82)
+                    ),
+                True,
+{sprite}
+)""".format(sprite=code)
 
 
         # Методы галереи
@@ -432,7 +453,13 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
 
 
 
+        # Для добавления новых спрайтов
+        @classmethod
+        def add_mod_gallery(cls, fn=(lambda *args, **kwargs: None), *args, **kwargs):
 
+            ESDG.mod_init_galleries.add(fn)
+
+            return fn
 
 
 
@@ -506,16 +533,6 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
 
             renpy.restart_interaction()
 
-    # class EsdgElementData:
-    #
-    #     def __init__(self, *args, **kwargs):
-    #
-    #         self.preview = Null()#Crop((-50, -5, esdg.xpreview_size, esdg.ypreview_size), Text(str(i), size=200))
-    #
-    #         self.name = ""
-    #         self.collection = "None"
-    #         self.element_class = EsdgElementData
-
 
     class EsdgElement(object):
 
@@ -560,14 +577,15 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
         def code(self):
             return ""
 
-        def copy(self, *args, **kwargs):
-            return self.__class__(**self.__copy_req)
+        def copy(self, dst=None, *args, **kwargs):
+            dst = dst or self.__class__
+            return dst(**self.__copy_req)
 
         def __call__(self, *args, **kwargs):
             pass
 
         def __eq__(self, other):
-            if not isinstance(other, self.__class__):
+            if not isinstance(other, EsdgElement):
                 return False
             return self.name == other.name
 
@@ -734,8 +752,46 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
 
         def __call__(self, *args, **kwargs):
 
+            day_bg = [
+                "int_bus",
+                "int_aidpost_night",
+            ]
 
-            if "day" in self.preference["name"]:
+            sunset_bg = [
+                "int_house_of_mt_noitem_night",
+                "int_house_of_mt_night",
+                "int_library_night2",
+                "int_clubs_male2_night",
+                "int_catacombs_living",
+                "int_catacombs_living_nodoor",
+                "int_house_of_dv_night",
+            ]
+
+            night_bg = [
+                "int_catacombs_entrance",
+                "int_catacombs_entrance_red",
+                "int_catacombs_door",
+                "int_catacombs_hole",
+                "int_mine",
+                "int_mine_crossroad",
+                "int_mine_coalface",
+                "int_mine_halt",
+                "int_mine_door",
+                "int_mine_room",
+                "int_mine_room_red",
+                "int_mine_exit_night_nolight",
+                "int_mine_exit_night_light",
+                "int_liaz",
+            ]
+
+            if self.preference["name"] in day_bg:
+                esdg.day_time()
+            elif self.preference["name"] in sunset_bg:
+                esdg.sunset_time()
+            elif self.preference["name"] in night_bg:
+                esdg.night_time()
+
+            elif "day" in self.preference["name"]:
                 esdg.day_time()
 
             elif "sunset" in self.preference["name"]:
@@ -761,7 +817,7 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
             self.collection = "sprite"
             self.extra = {"Тег": name}
 
-            self.actions = {"Убрать спрайт": esdg.remove_sprite}
+            self.actions = {"Убрать спрайт": esdg.remove_sprite, "Копировать инициализацию": self.init_code}
 
             self._data = data
 
@@ -854,6 +910,8 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
 
         def create_displayable(self, _preference=None):
 
+            global deb
+
             preference = self.default_preference.copy()
             preference.update(_preference or self.preference)
 
@@ -872,6 +930,7 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
             if preference["accessory"]:
                 composite_data += [(0, 0), base["accessories"][ preference["accessory"] ], ]
 
+            deb = composite_data
             return im.Composite(*composite_data)
 
 
@@ -925,10 +984,6 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
 
 
             return img
-
-
-
-
 
         def get_settings(self):
 
@@ -1002,10 +1057,10 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
 
             preference[name] = value
 
-            if name != "distance" and not self._emotions[ preference["emotion"] ][0] in self._data[preference["distance"]]:
+            if name != "distance" and not preference["distance"] in self._emotions[ preference["emotion"] ][1]:# and not self._emotions[ preference["emotion"] ][0] in self._data[preference["distance"]]:
                 if log:
                     renpy.notify("Не возможно применить дистанцию к одной из настроек, потому она установлена по умолчанию")
-                preference["distance"] = "normal"
+                preference["distance"] = "normal" if "normal" in self._emotions[ preference["emotion"] ][1] else self._emotions[ preference["emotion"] ][1][ 0 ]
 
 
             if name != "emotion" and not preference["distance"] in self._emotions[ preference["emotion"] ][1]:
@@ -1037,8 +1092,6 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
 
             return preference
 
-
-
         # Help
 
         def _distance(self, emotion_data):
@@ -1052,9 +1105,9 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
             """Находит позу от эмоции."""
             return self._emotions[emotion][0]
 
-        def _base(self, distance, pose):
-            """Находит базу под позу для определенной дистанции."""
-            return self._data[distance][pose]
+        def _base(self, distance, pose=None, emotion=None):
+            """Находит базу под позу для определенной дистанции или дистанции."""
+            return self._data[distance][pose or self._pose(emotion)]
 
         def _dress(self, base):
             """
@@ -1078,13 +1131,73 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
 
         @property
         def code(self):
-            name = " "+self.name
-            emotion = (" "+self.preference["emotion"] if self.preference["emotion"] else "")
-            dress = (" "+self.preference["dress"] if self.preference["dress"] else " body" if "body" in self._data[self.preference["distance"]][ self._emotions[ self.preference["emotion"]][0]] else"")
-            accessory = (" "+self.preference["accessory"] if self.preference["accessory"] else "")
-            distance = (" "+self.preference["distance"] if self.preference["distance"] != "normal" else "")
+            # base = self._base(self.preference["distance"], self._pose(self.preference["emotion"]))
+            #
+            # name = " "+self.name
+            # emotion = (" "+self.preference["emotion"] if self.preference["emotion"] else "")
+            # dress = (" "+self.preference["dress"] if self.preference["dress"] else (" body" if "body" in base and "dresses" in base else ""))
+            # accessory = (" "+self.preference["accessory"] if self.preference["accessory"] else "")
+            # distance = (" "+self.preference["distance"] if self.preference["distance"] != "normal" else "")
+            name = self.name_code()
             position = (" at "+self.preference["position"] if self.preference["position"] else "")
-            return "show"+name+emotion+dress+accessory+distance+position
+
+            return "show "+name+position#+emotion+dress+accessory+distance
+
+        def name_code(self):
+
+            base = self._base(self.preference["distance"], self._pose(self.preference["emotion"]))
+
+            code = [self.name]
+
+            if self.preference["emotion"]:
+                code.append(self.preference["emotion"])
+
+            if self.preference["dress"]:
+                code.append(self.preference["dress"])
+            elif "body" in base and "dresses" in base:
+                code.append("body")
+
+            if self.preference["accessory"]:
+                code.append(self.preference["accessory"])
+
+            if self.preference["distance"] != "normal":
+                code.append(self.preference["distance"])
+
+            return " ".join(code)
+
+        def init_code(self):
+
+            code = "image "+self.name_code() + " = " + esdg.timed_wrap(self.composite_code(24), comment=(" # Спрайт уже инициализирован" if renpy.get_registered_image(self.name_code()) else ""))
+
+            pygame.scrap.put(pygame.SCRAP_TEXT, code.encode("utf-8"))
+            renpy.notify(_(code))#"Строчки с инициализацией скопированы в буфер обмена"
+
+
+        def composite_code(self, spacing=0):
+
+            space = " "*spacing
+
+            base = self._base(self.preference["distance"], self._pose(self.preference["emotion"]))
+
+            code = space+"im.Composite("+str((esdg.SPRITES_DISTANCE_XSIZES[ self.preference["distance"] ], esdg.y_size))+",\n"
+
+
+            if "body" in base:
+                code += space + "    (0, 0), "+ '"'+base["body"]+'", # Тело\n'
+
+            code += space + "    (0, 0), "+ '"'+base["emotions"][ self.preference["emotion"] ]+'", # Эмоция\n'
+
+            if self.preference["dress"]:
+                code += space + "    (0, 0), "+ '"'+base["dresses"][ self.preference["dress"] ]+'", # Одежда\n'
+
+            if self.preference["accessory"]:
+                code += space + "    (0, 0), "+ '"'+base["accessories"][ self.preference["accessory"] ]+'", # Аксессуар\n'
+
+            code += space+")"
+
+
+            return code
+
 
         def callback(self, *callback):
 
@@ -1093,6 +1206,8 @@ https://github.com/Mikan-DS/Everlasting_Summer_Development_Gallery/issues
             self()
 
         def __call__(self, trans=dissolve, *args, **kwargs):
+            if not renpy.get_registered_image(self.name_code()):
+                renpy.notify("Внимание, спрайт \""+esdg.translate(self.name)+"\" не инициализирован!")
             renpy.call("es_dev_gallery.show_displayable", displayable=esdg.timed_sprite(self.create_displayable()), name = self.name, pos_at = esdg.POSITIONS[self.preference["position"]], trans=trans)
 
         def remove(self):

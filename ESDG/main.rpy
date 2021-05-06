@@ -1,24 +1,11 @@
 # -*- coding: utf-8 -*-
 init:
 
-    # transform esdg_focus_sprite(x=900, k=1.0, h=.2):
-    #
-    #
-    #
-    #     zoom float(k)
-    #     #crop (0, (y-y*(1/k))*yk, x, y*(1/k))
-    #     # crop (0, esdg.y_size*k*h, x, 1080)
-    #     #
-    #     # xalign .5
-    #     # yalign 1.0
 
     transform esdg_focus_sprite(x=1920, k=1.0, h=.2):
 
         crop (0, esdg.y_size*(1/k)*h, x, esdg.y_size*(1/(k))) # -esdg.y_size*h*k*(1/chk)
         zoom float(k)
-
-
-
 
     transform esdg_zoom_image(k=1.0):
 
